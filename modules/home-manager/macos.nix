@@ -8,7 +8,15 @@
       pkgs.nixfmt-rfc-style
       pkgs.home-manager
       pkgs.flake-checker
-      pkgs.fh
+
+      # Oils!
+      pkgs.oils-for-unix
+
+      # Zed
+      pkgs.zed-editor
+
+      # Browser
+      pkgs.google-chrome
 
       # Stuff that I probably don't use enough to justify their being here.
       pkgs.fd
@@ -20,7 +28,7 @@
     #
     # You can update Home Manager without changing this value.
     # See the Home Manager release notes for a list of state version changes in each release.
-    stateVersion = "23.11";
+    stateVersion = "24.11";
   };
 
   programs = {

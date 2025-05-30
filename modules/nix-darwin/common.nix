@@ -4,6 +4,7 @@
   arch,
   pkgs,
   lib,
+  options,
   ...
 }:
 {
@@ -29,16 +30,16 @@
   };
 
   nix = {
-    # Use latest Nix from nixpkgs.
+    # Use the latest Nix from nixpkgs.
     package = pkgs.nix;
+    nixPath = options.nix.nixPath.default ++ [ "nixpkgs=${inputs.nixpkgs}" ];
 
     # Keep the system lightweight
     gc.automatic = true;
     optimise.automatic = true;
-    settings.auto-optimise-store = true;
     settings = {
       # Necessary for using flakes on this system.
-      experimental-features = "nix-command flakes repl-flake";
+      experimental-features = "nix-command flakes";
     };
 
     extraOptions = lib.mkIf (arch == "aarch64-darwin") ''
@@ -58,10 +59,11 @@
 
     # Used for backwards compatibility, please read the changelog before changing.
     # $ darwin-rebuild changelog
-    stateVersion = 4;
+    stateVersion = 5;
 
-    # Nix-darwin does not link installed applications to the user environment. This means apps will not show up
-    # in spotlight, and when launched through the dock they come with a terminal window. This is a workaround.
+    # nix-darwin does not link installed applications to the user environment.
+    # This means apps will not show up in spotlight, and when launched through the dock they come with a terminal window.
+    # This is a workaround.
     # Upstream issue: https://github.com/LnL7/nix-darwin/issues/214
     # Issue: https://github.com/LnL7/nix-darwin/issues/139
     activationScripts.applications.text =
@@ -82,10 +84,10 @@
         chmod u+w "$nix_apps"
 
         find ${config.system.build.applications}/Applications -maxdepth 1 -type l -exec readlink '{}' + |
-            while read src; do
-                # Spotlight does not recognize symlinks, it will ignore directory we link to the applications folder.
-                # It does understand MacOS aliases though, a unique filesystem feature. Sadly they cannot be created
-                # from bash (as far as I know), so we use the oh-so-great Apple Script instead.
+            while read -r src; do
+                # Spotlight does not recognize symlinks, it will ignore directories we link to the Applications folders.
+                # It does understand MacOS aliases though, a unique filesystem feature.
+                # Sadly, they cannot be created from Bash (as far as I know), so we use the oh-so-great AppleScript instead.
                 /usr/bin/osascript -e "
                     set fileToAlias to POSIX file \"$src\"
                     set applicationsFolder to POSIX file \"$nix_apps\"

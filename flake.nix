@@ -1,8 +1,10 @@
 {
-  description = "Eli's system flake for UTM macOS VMs.";
+  description = "Eli's system flake for UTM-based macOS VMs.";
 
   inputs = {
-    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.*.tar.gz";
+    nixpkgs = {
+      url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    };
     nix-darwin = {
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
