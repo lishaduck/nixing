@@ -17,7 +17,10 @@
       inherit pkgs;
     };
 
-    users.${config.users.primary}.imports = [ ../home-manager/${config.users.primary}.nix ];
+    users.${config.users.primary}.imports = [
+      inputs.zen-browser.homeModules.twilight
+      ../home-manager/${config.users.primary}.nix
+    ];
   };
   users.users.${config.users.primary} = {
     name = config.users.primary;
@@ -57,6 +60,5 @@
     # Used for backwards compatibility, please read the changelog before changing.
     # $ darwin-rebuild changelog
     stateVersion = 6;
-
   };
 }

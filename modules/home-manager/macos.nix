@@ -5,9 +5,8 @@
       # Nix stuff
       pkgs.nil
       pkgs.nixd
-      pkgs.nixfmt-rfc-style
+      pkgs.nixfmt
       pkgs.home-manager
-      pkgs.flake-checker
 
       # Oils!
       pkgs.oils-for-unix
@@ -28,18 +27,18 @@
     #
     # You can update Home Manager without changing this value.
     # See the Home Manager release notes for a list of state version changes in each release.
-    stateVersion = "24.11";
+    stateVersion = "25.11";
   };
 
   programs = {
-    # ZSH is the default shell on Catalina onward.
+    # Zsh is the default shell on Catalina onward.
     zsh = {
       enable = true;
       enableCompletion = true;
       syntaxHighlighting.enable = true;
     };
     bash.enable = true; # Lots of things shell out to Bash.
-    # fish.enable = true;
+
     command-not-found.enable = true;
 
     git = {
@@ -74,6 +73,8 @@
       enable = true;
       nix-direnv.enable = true;
     };
+
+    zen-browser.enable = true;
 
     # Let Home Manager install and manage itself.
     home-manager.enable = true;
