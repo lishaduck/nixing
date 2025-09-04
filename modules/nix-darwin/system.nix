@@ -8,5 +8,6 @@
   environment.systemPackages = [
     pkgs.jq
     pkgs.yq
+    pkgs.git
   ];
 }

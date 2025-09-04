@@ -1,20 +1,21 @@
 {
-  description = "Eli's system flake for UTM-based macOS VMs.";
+  description = "Eli's system flake for UTM-based macOS VMs";
 
   inputs = {
+    systems.url = "github:nix-systems/default";
     nixpkgs = {
       url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     };
     nix-darwin = {
-      url = "github:LnL7/nix-darwin";
+      url = "github:nix-darwin/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nix-index-database = {
-      url = "github:nix-community/nix-index-database";
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -22,17 +23,23 @@
   outputs =
     inputs@{
       self,
+      systems,
       nixpkgs,
       nix-darwin,
       home-manager,
-      nix-index-database,
+      treefmt-nix,
       ...
     }:
     let
-      device = "macOSs-Virtual-Machine";
-      arch = "aarch64-darwin";
+      # Small tool to iterate over each systems
+      eachSystem = f: nixpkgs.lib.genAttrs (import systems) (system: f nixpkgs.legacyPackages.${system});
+
+      # Eval the treefmt modules from ./treefmt.nix
+      treefmtEval = eachSystem (pkgs: treefmt-nix.lib.evalModule pkgs ./treefmt.nix);
+
       commonConfig = import ./modules/nix-darwin/common.nix;
       mainConfig = import ./modules/nix-darwin/system.nix;
+
       darwinConfig =
         system: conf:
         nix-darwin.lib.darwinSystem {
@@ -43,24 +50,30 @@
           };
           modules = [
             home-manager.darwinModules.default
-            nix-index-database.darwinModules.nix-index
             conf
             commonConfig
           ];
           specialArgs = {
-            inherit system inputs arch;
+            inherit system inputs;
           };
         };
     in
     {
-      darwinConfigurations.${device} = darwinConfig arch mainConfig;
+      # Build darwin flake using:
+      # $ darwin-rebuild build --flake .#macOSs-Virtual-Machine
+      darwinConfigurations."macOSs-Virtual-Machine" = darwinConfig "aarch64-darwin" mainConfig;
 
       # Expose the package set, including overlays, for convenience.
-      darwinPackages = self.darwinConfigurations.${device}.pkgs;
+      darwinPackages = self.darwinConfigurations."macOSs-Virtual-Machine".pkgs;
 
       # Expose nix-darwin
       packages = nix-darwin.packages;
 
-      formatter.${arch} = self.darwinPackages.nixfmt-rfc-style;
+      # for `nix fmt`
+      formatter = eachSystem (pkgs: treefmtEval.${pkgs.system}.config.build.wrapper);
+      # for `nix flake check`
+      checks = eachSystem (pkgs: {
+        formatting = treefmtEval.${pkgs.system}.config.build.check self;
+      });
     };
 }
