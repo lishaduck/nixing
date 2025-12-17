@@ -2,13 +2,20 @@
   description = "Eli's system flake for UTM-based macOS VMs";
 
   inputs = {
-    systems.url = "github:nix-systems/default";
-    nixpkgs = {
-      url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    };
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs-zed.url = "github:NixOS/nixpkgs/673584bb0bc5621ebc622698ec24f480ae1fe031";
     nix-darwin = {
       url = "github:nix-darwin/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
+    homebrew-core = {
+      url = "github:homebrew/homebrew-core";
+      flake = false;
+    };
+    homebrew-cask = {
+      url = "github:homebrew/homebrew-cask";
+      flake = false;
     };
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -28,16 +35,20 @@
   outputs =
     inputs@{
       self,
-      systems,
       nixpkgs,
       nix-darwin,
+      nix-homebrew,
+      homebrew-core,
+      homebrew-cask,
       home-manager,
       treefmt-nix,
       ...
     }:
     let
+      supportedSystems = [ "aarch64-darwin" ];
+
       # Small tool to iterate over each systems
-      eachSystem = f: nixpkgs.lib.genAttrs (import systems) (system: f nixpkgs.legacyPackages.${system});
+      eachSystem = f: nixpkgs.lib.genAttrs supportedSystems (system: f nixpkgs.legacyPackages.${system});
 
       # Eval the treefmt modules from ./treefmt.nix
       treefmtEval = eachSystem (pkgs: treefmt-nix.lib.evalModule pkgs ./treefmt.nix);
@@ -50,16 +61,41 @@
         nix-darwin.lib.darwinSystem {
           system = system;
           pkgs = import nixpkgs {
-            system = system;
+            inherit system;
             config.allowUnfree = true;
+            overlays = [
+              (final: prev: {
+                zed-editor = inputs.nixpkgs-zed.legacyPackages.${system}.zed-editor;
+              })
+            ];
           };
           modules = [
+            commonConfig
+            nix-homebrew.darwinModules.nix-homebrew
+            (
+              { config, ... }:
+              {
+                nix-homebrew = {
+                  enable = true;
+
+                  # User owning the Homebrew prefix
+                  user = config.users.primary;
+
+                  taps = {
+                    "homebrew/homebrew-core" = homebrew-core;
+                    "homebrew/homebrew-cask" = homebrew-cask;
+                  };
+
+                  mutableTaps = false;
+                };
+                homebrew.taps = builtins.attrNames config.nix-homebrew.taps;
+              }
+            )
             home-manager.darwinModules.default
             conf
-            commonConfig
           ];
           specialArgs = {
-            inherit system inputs;
+            inherit inputs;
           };
         };
     in
@@ -67,9 +103,6 @@
       # Build darwin flake using:
       # $ darwin-rebuild build --flake .#macOSs-Virtual-Machine
       darwinConfigurations."macOSs-Virtual-Machine" = darwinConfig "aarch64-darwin" mainConfig;
-
-      # Expose the package set, including overlays, for convenience.
-      darwinPackages = self.darwinConfigurations."macOSs-Virtual-Machine".pkgs;
 
       # Expose nix-darwin
       packages = nix-darwin.packages;

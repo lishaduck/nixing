@@ -1,7 +1,6 @@
 {
   inputs,
   config,
-  system,
   pkgs,
   lib,
   options,
@@ -22,6 +21,7 @@
       ../home-manager/${config.users.primary}.nix
     ];
   };
+  system.primaryUser = config.users.primary;
   users.users.${config.users.primary} = {
     name = config.users.primary;
     home = "/Users/${config.users.primary}";
@@ -31,7 +31,7 @@
     enable = true;
 
     # Use the latest Nix from nixpkgs.
-    package = pkgs.nix;
+    package = with pkgs; nix;
     nixPath = options.nix.nixPath.default ++ [ "nixpkgs=${inputs.nixpkgs}" ];
 
     # Keep the system lightweight
@@ -42,14 +42,15 @@
       experimental-features = "nix-command flakes";
     };
 
-    extraOptions = lib.mkIf (system == "aarch64-darwin") ''
+    extraOptions = lib.mkIf (pkgs.stdenv.hostPlatform.system == "aarch64-darwin") ''
       extra-platforms = x86_64-darwin aarch64-darwin
     '';
   };
 
   nixpkgs = {
     # The platform the configuration will be used on.
-    hostPlatform = system;
+    hostPlatform = pkgs.stdenv.hostPlatform.system;
+    pkgs = pkgs;
   };
 
   # nix-darwin metadata
