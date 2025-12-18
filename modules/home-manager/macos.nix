@@ -60,6 +60,8 @@
       enable = true;
       package = with pkgs; vscode;
 
+      mutableExtensionsDir = false;
+
       profiles.default = {
         userSettings = {
           "update.mode" = "none";
