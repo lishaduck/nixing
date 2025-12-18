@@ -3,18 +3,19 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    nixpkgs-zed.url = "github:NixOS/nixpkgs/673584bb0bc5621ebc622698ec24f480ae1fe031";
+    nixpkgs-master.url = "github:NixOS/nixpkgs/master";
     nix-darwin = {
       url = "github:nix-darwin/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
-    homebrew-core = {
-      url = "github:homebrew/homebrew-core";
-      flake = false;
+    brew-nix = {
+      url = "github:BatteredBunny/brew-nix";
+      inputs.nix-darwin.follows = "nix-darwin";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.brew-api.follows = "brew-api";
     };
-    homebrew-cask = {
-      url = "github:homebrew/homebrew-cask";
+    brew-api = {
+      url = "github:BatteredBunny/brew-api";
       flake = false;
     };
     home-manager = {
@@ -37,9 +38,7 @@
       self,
       nixpkgs,
       nix-darwin,
-      nix-homebrew,
-      homebrew-core,
-      homebrew-cask,
+      brew-nix,
       home-manager,
       treefmt-nix,
       ...
@@ -65,32 +64,14 @@
             config.allowUnfree = true;
             overlays = [
               (final: prev: {
-                zed-editor = inputs.nixpkgs-zed.legacyPackages.${system}.zed-editor;
+                zed-editor = inputs.nixpkgs-master.legacyPackages.${system}.zed-editor;
               })
+              inputs.brew-nix.overlays.default
             ];
           };
           modules = [
             commonConfig
-            nix-homebrew.darwinModules.nix-homebrew
-            (
-              { config, ... }:
-              {
-                nix-homebrew = {
-                  enable = true;
-
-                  # User owning the Homebrew prefix
-                  user = config.users.primary;
-
-                  taps = {
-                    "homebrew/homebrew-core" = homebrew-core;
-                    "homebrew/homebrew-cask" = homebrew-cask;
-                  };
-
-                  mutableTaps = false;
-                };
-                homebrew.taps = builtins.attrNames config.nix-homebrew.taps;
-              }
-            )
+            brew-nix.darwinModules.default
             home-manager.darwinModules.default
             conf
           ];

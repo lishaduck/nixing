@@ -9,16 +9,10 @@
     jq
     yq
     git
+    brewCasks."ghostty@tip"
   ];
 
   fonts = {
     packages = with pkgs; [ cascadia-code ];
-  };
-
-  homebrew = {
-    enable = true;
-    casks = [
-      "ghostty@tip"
-    ];
   };
 }

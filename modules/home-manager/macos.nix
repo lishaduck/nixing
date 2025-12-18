@@ -39,7 +39,10 @@
     };
     bash.enable = true; # Lots of things shell out to Bash.
 
-    command-not-found.enable = true;
+    nix-index = {
+      enable = true;
+      enableZshIntegration = true;
+    };
 
     git = {
       enable = true;
@@ -77,7 +80,7 @@
           "nix.serverSettings" = {
             "nixd" = {
               "options" = {
-                "nixos" = {
+                "nix-darwin" = {
                   "expr" =
                     "(builtins.getFlake (builtins.toString ./.)).darwinConfigurations.\"macOSs-Virtual-Machine\".options";
                 };
@@ -90,6 +93,7 @@
           };
 
           "git.blame.editorDecoration.enabled" = true;
+          "diffEditor.ignoreTrimWhitespace" = true;
           "terminal.integrated.stickyScroll.enabled" = false;
         };
 
@@ -106,6 +110,8 @@
     ghostty = {
       enable = true;
       package = null;
+      enableZshIntegration = true;
+      enableBashIntegration = true;
 
       settings = {
         font-family = "Cascadia Code";
@@ -156,6 +162,8 @@
     };
 
     zen-browser.enable = true;
+
+    nh.enable = true;
 
     # Let Home Manager install and manage itself.
     home-manager.enable = true;
