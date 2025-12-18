@@ -12,6 +12,8 @@
     brewCasks."ghostty@tip"
   ];
 
+  environment.pathsToLink = [ "/share/zsh" ];
+
   fonts = {
     packages = with pkgs; [ cascadia-code ];
   };

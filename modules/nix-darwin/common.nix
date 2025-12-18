@@ -18,6 +18,7 @@
 
     users.${config.users.primary}.imports = [
       inputs.zen-browser.homeModules.twilight
+      inputs.nix-index-database.homeModules.default
       ../home-manager/${config.users.primary}.nix
     ];
   };

@@ -22,6 +22,10 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nix-index-database = {
+      url = "github:nix-community/nix-index-database";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -40,6 +44,7 @@
       nix-darwin,
       brew-nix,
       home-manager,
+      nix-index-database,
       treefmt-nix,
       ...
     }:
@@ -73,6 +78,7 @@
             commonConfig
             brew-nix.darwinModules.default
             home-manager.darwinModules.default
+            nix-index-database.darwinModules.nix-index
             conf
           ];
           specialArgs = {
