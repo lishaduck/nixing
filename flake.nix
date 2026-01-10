@@ -88,7 +88,7 @@
     in
     {
       # Build darwin flake using:
-      # $ darwin-rebuild build --flake .#macOSs-Virtual-Machine
+      # $ nh darwin build ~/Developer/dotfiles
       darwinConfigurations."macOSs-Virtual-Machine" = darwinConfig "aarch64-darwin" mainConfig;
 
       # Expose nix-darwin

@@ -17,6 +17,9 @@
       # Browser
       google-chrome
 
+      # CTF
+      wireshark
+
       # Stuff that I probably don't use enough to justify their being here.
       fd
       bat-extras.batman
