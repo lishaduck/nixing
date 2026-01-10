@@ -14,6 +14,9 @@
       # Zed
       zed-editor
 
+      # jj
+      jujutsu
+
       # Browser
       google-chrome
 
