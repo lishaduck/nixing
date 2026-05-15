@@ -20,6 +20,10 @@
       # Browser
       google-chrome
 
+      # Editors
+      flow-control
+      helix
+
       # CTF
       wireshark
 
