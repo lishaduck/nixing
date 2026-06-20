@@ -1,5 +1,9 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 {
+  imports = [
+    inputs.nix-index-database.homeModules.default
+  ];
+
   home = {
     packages = with pkgs; [
       # Nix stuff

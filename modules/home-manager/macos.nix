@@ -1,6 +1,9 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 {
-  imports = [ ./common.nix ];
+  imports = [
+    inputs.zen-browser.homeModules.twilight
+    ./common.nix
+  ];
 
   home = {
     packages = with pkgs; [
