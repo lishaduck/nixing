@@ -7,7 +7,7 @@
   ...
 }:
 {
-  imports = [ ./conf.nix ];
+  imports = [ ../../options/options.nix ];
 
   home-manager = {
     useGlobalPkgs = true;
@@ -40,7 +40,10 @@
     optimise.automatic = true;
     settings = {
       # Necessary for using flakes on this system.
-      experimental-features = "nix-command flakes";
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
     };
 
     extraOptions = lib.mkIf (pkgs.stdenv.hostPlatform.system == "aarch64-darwin") ''

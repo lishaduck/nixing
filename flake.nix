@@ -1,9 +1,9 @@
 {
-  description = "Eli's system flake for UTM-based macOS VMs";
+  description = "Eli's system flake";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    nixpkgs-master.url = "github:NixOS/nixpkgs?rev=ac9059834fb42608222c3b1d726ba724a9e76b55";
+    nixpkgs-master.url = "github:NixOS/nixpkgs?rev=8c91a71d13451abc40eb9dae8910f972f979852f";
     nix-darwin = {
       url = "github:nix-darwin/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -35,6 +35,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
+    nixos-wsl = {
+      url = "github:nix-community/NixOS-WSL";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -46,10 +50,14 @@
       home-manager,
       nix-index-database,
       treefmt-nix,
+      nixos-wsl,
       ...
     }:
     let
-      supportedSystems = [ "aarch64-darwin" ];
+      supportedSystems = [
+        "aarch64-darwin"
+        "x86_64-linux"
+      ];
 
       # Small tool to iterate over each systems
       eachSystem = f: nixpkgs.lib.genAttrs supportedSystems (system: f nixpkgs.legacyPackages.${system});
@@ -57,11 +65,24 @@
       # Eval the treefmt modules from ./treefmt.nix
       treefmtEval = eachSystem (pkgs: treefmt-nix.lib.evalModule pkgs ./treefmt.nix);
 
-      commonConfig = import ./modules/nix-darwin/common.nix;
-      mainConfig = import ./modules/nix-darwin/system.nix;
+      wslConfig =
+        system: options:
+        nixpkgs.lib.nixosSystem {
+          modules = [
+            nixos-wsl.nixosModules.default
+            home-manager.nixosModules.default
+            nix-index-database.nixosModules.nix-index
+            { nixpkgs.hostPlatform = system; }
+            ./modules/nixos/common.nix
+            options
+          ];
+          specialArgs = {
+            inherit inputs;
+          };
+        };
 
       darwinConfig =
-        system: conf:
+        system: options:
         nix-darwin.lib.darwinSystem {
           system = system;
           pkgs = import nixpkgs {
@@ -69,17 +90,17 @@
             config.allowUnfree = true;
             overlays = [
               (final: prev: {
-                zed-editor = inputs.nixpkgs-master.legacyPackages.${system}.zed-editor;
+                zed-editor = inputs.nixpkgs-master.legacyPackages.${prev.system}.zed-editor;
               })
               inputs.brew-nix.overlays.default
             ];
           };
           modules = [
-            commonConfig
             brew-nix.darwinModules.default
             home-manager.darwinModules.default
             nix-index-database.darwinModules.nix-index
-            conf
+            ./modules/nix-darwin/common.nix
+            options
           ];
           specialArgs = {
             inherit inputs;
@@ -87,18 +108,26 @@
         };
     in
     {
+      # Build nixos flake using:
+      # $ nh os build ~/nixing
+      nixosConfigurations = {
+        nixos = wslConfig "x86_64-linux" ./modules/nixos/system.nix;
+      };
+
       # Build darwin flake using:
       # $ nh darwin build ~/Developer/dotfiles
-      darwinConfigurations."macOSs-Virtual-Machine" = darwinConfig "aarch64-darwin" mainConfig;
+      darwinConfigurations = {
+        "macOSs-Virtual-Machine" = darwinConfig "aarch64-darwin" ./modules/nix-darwin/system.nix;
+      };
 
       # Expose nix-darwin
       packages = nix-darwin.packages;
 
       # for `nix fmt`
-      formatter = eachSystem (pkgs: treefmtEval.${pkgs.system}.config.build.wrapper);
+      formatter = eachSystem (pkgs: treefmtEval.${pkgs.stdenv.hostPlatform.system}.config.build.wrapper);
       # for `nix flake check`
       checks = eachSystem (pkgs: {
-        formatting = treefmtEval.${pkgs.system}.config.build.check self;
+        formatting = treefmtEval.${pkgs.stdenv.hostPlatform.system}.config.build.check self;
       });
     };
 }
