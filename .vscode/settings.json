@@ -1,6 +1,9 @@
 {
     "nix.enableLanguageServer": true,
-    "nix.serverPath": "nixd",
+    "nix.serverPath": [
+        "nixd",
+        "--semantic-tokens=true"
+    ],
     "nix.serverSettings": {
         "nixd": {
             "options": {

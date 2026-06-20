@@ -46,24 +46,10 @@
           "editor.formatOnSave" = true;
 
           "nix.enableLanguageServer" = true;
-          "nix.serverPath" = "nixd";
-          "nix.serverSettings" = {
-            "nixd" = {
-              "options" = {
-                "nix-darwin" = {
-                  "expr" =
-                    "(builtins.getFlake (builtins.toString ./.)).darwinConfigurations.macOSs-Virtual-Machine.options";
-                };
-                "home-manager" = {
-                  "expr" =
-                    "(builtins.getFlake (builtins.toString ./.)).nixosConfigurations.nixos.options.home-manager.users.type.getSubOptions []";
-                };
-                "nixos" = {
-                  "expr" = "(builtins.getFlake (builtins.toString ./.)).nixosConfigurations.nixos.options";
-                };
-              };
-            };
-          };
+          "nix.serverPath" = [
+            "${pkgs.nixd}/bin/nixd"
+            "--semantic-tokens=true"
+          ];
 
           "git.blame.editorDecoration.enabled" = true;
           "diffEditor.ignoreTrimWhitespace" = true;
