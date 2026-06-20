@@ -52,14 +52,14 @@
               "options" = {
                 "nix-darwin" = {
                   "expr" =
-                    "(builtins.getFlake (builtins.toString ./.)).darwinConfigurations.\"macOSs-Virtual-Machine\".options";
+                    "(builtins.getFlake (builtins.toString ./.)).darwinConfigurations.macOSs-Virtual-Machine.options";
                 };
                 "home-manager" = {
                   "expr" =
-                    "(builtins.getFlake (builtins.toString ./.)).nixosConfigurations.\"nixos\".options.home-manager.users.type.getSubOptions []";
+                    "(builtins.getFlake (builtins.toString ./.)).nixosConfigurations.nixos.options.home-manager.users.type.getSubOptions []";
                 };
                 "nixos" = {
-                  "expr" = "(builtins.getFlake (builtins.toString ./.)).nixosConfigurations.\"nixos\".options";
+                  "expr" = "(builtins.getFlake (builtins.toString ./.)).nixosConfigurations.nixos.options";
                 };
               };
             };
