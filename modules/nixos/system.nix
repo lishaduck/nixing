@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 {
   users = {
     primary = "nixos";
@@ -10,12 +10,19 @@
     };
   };
 
-  environment.systemPackages = with pkgs; [
-    wget
-    nh
-    flow-control
-    git
-  ];
+  environment = {
+    systemPackages = with pkgs; [
+      wget
+      nh
+      flow-control
+      git
+    ];
+    variables = {
+      PATH = [
+        "${config.wsl.wslConf.automount.root}/c/Program Files/Microsoft VS Code/bin/code"
+      ];
+    };
+  };
 
   programs = {
     zsh.enable = true;
@@ -27,6 +34,10 @@
   wsl = {
     enable = true;
     defaultUser = "nixos";
+
+    wslConf = {
+      interop.appendWindowsPath = false;
+    };
   };
 
   # This value determines the NixOS release from which the default
