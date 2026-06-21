@@ -1,4 +1,9 @@
-{ pkgs, inputs, ... }:
+{
+  pkgs,
+  inputs,
+  lib,
+  ...
+}:
 {
   imports = [
     inputs.zen-browser.homeModules.twilight
@@ -47,7 +52,7 @@
 
           "nix.enableLanguageServer" = true;
           "nix.serverPath" = [
-            "${pkgs.nixd}/bin/nixd"
+            (lib.getExe pkgs.nixd)
             "--semantic-tokens=true"
           ];
 
