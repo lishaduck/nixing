@@ -11,6 +11,10 @@
   };
 
   environment = {
+    pathsToLink = [
+      "/share/applications"
+      "/share/xdg-desktop-portal"
+    ];
     systemPackages = with pkgs; [
       wget
       nh
@@ -22,6 +26,11 @@
         "${config.wsl.wslConf.automount.root}/c/Program Files/Microsoft VS Code/bin/code"
       ];
     };
+  };
+
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
   };
 
   programs = {
